@@ -65,6 +65,14 @@ class SleepTrackerFragment : Fragment() {
         val sleepTrackerViewModel =
                 ViewModelProvider(this, viewModelFactory).get(SleepTrackerViewModel::class.java)
 
+        sleepTrackerViewModel.navigateToSleepDetail.observe(viewLifecycleOwner, Observer { night ->
+            night?.let {
+                this.findNavController().navigate(
+                        SleepTrackerFragmentDirections
+                                .actionSleepTrackerFragmentToSleepDetailFragment(night))
+                sleepTrackerViewModel.onSleepDetailNavigated()
+            }
+        })
 
         val manager = GridLayoutManager(activity, 3)
         binding.sleepList.layoutManager = manager
@@ -77,7 +85,9 @@ class SleepTrackerFragment : Fragment() {
         // This is necessary so that the binding can observe LiveData updates.
         binding.setLifecycleOwner(this)
 
-        val adapter = SleepNightAdapter()
+        val adapter = SleepNightAdapter(SleepNightListener { nightId ->
+            sleepTrackerViewModel.onSleepNightClicked(nightId)
+        })
         binding.sleepList.adapter = adapter
 
         sleepTrackerViewModel.nights.observe(viewLifecycleOwner, Observer {
